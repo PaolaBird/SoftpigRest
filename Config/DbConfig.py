@@ -1,21 +1,68 @@
-from flask import Flask, jsonify, request
-from flask_mysqldb import MySQL
+import pymysql
+from flask import jsonify
+import mysql.connector
 
-app = Flask(__name__)
-
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root'
-app.config['MYSQL_DB'] = 'softpig'
-
-mysql = MySQL(app)
-
-
-@app.route('/')
-def index():
-    if request.method == "GET":
-        cur = mysql.connection.cursor()
-        return jsonify({"message": "Conexión a la Bd correcta"})
-
-if __name__ == '__main__':
-    app.run(debug=True)
+class DbConfig():
+                 
+    def read(self, query):
+        
+        conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        #conn = pymysql.connect("localhost","root","root", "softporc")
+        try:
+            c = conn.cursor()
+            c.execute(query)
+            return   c.fetchall()
+        
+        except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
+            return jsonify({'status': 400, 'Error': e}) 
+        
+        finally:
+            conn.close()
+        
+    def update(self, query):
+        conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        #conn = pymysql.connect("localhost","root","root", "softporc")
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            conn.commit()
+            return jsonify({'status': 200})
+        except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
+	        return jsonify({'status': 400, 'error': e})
+        finally:
+            conn.close()
+                
+    def insert(self, query):
+        
+        conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        #conn = pymysql.connect("localhost","root","root", "softporc")
+        
+        try: 
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+            conn.commit()
+            
+            return jsonify({'status': 200})
+        
+        except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
+            return jsonify({'status': 400, 'Error': e}) 
+        
+        finally:
+            conn.close()
+            
+    def delete(self, query):
+        
+        conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        #conn = pymysql.connect("localhost","root","root", "softporc")
+        
+        try:
+            c = conn.cursor()
+            c.execute(query)
+            conn.commit()
+            return jsonify({"messaje": "200"})
+        
+        except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
+            return jsonify({'status': 400, 'Error': e}) 
+        
+        finally:
+            conn.close()
