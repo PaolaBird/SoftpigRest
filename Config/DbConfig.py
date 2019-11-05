@@ -1,6 +1,5 @@
 import pymysql
 from flask import jsonify
-import mysql.connector
 
 class DbConfig():
                  

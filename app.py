@@ -51,6 +51,7 @@ api.add_resource(GetBirth, '/api/birth_list/<int:id>')
 #Tercera entrega
 api.add_resource(GetHeat, '/api/heat_list/<int:id>')
 
+
 api.add_resource(GetMedicine, '/api/medicine_list/<int:id>')
 api.add_resource(SearchMedicine, '/api/search_medicine/<int:id>')
 

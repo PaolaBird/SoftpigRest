@@ -1,11 +1,15 @@
 from flask_restful import Resource
 from Config.DbConfig import DbConfig
+<<<<<<< HEAD
 from flask import jsonify
+=======
+>>>>>>> 23320b92dd5462b0fe807ff61d229ab756c0c17a
 
 class GetAlarms(Resource):
     
     connection = DbConfig()
     
+<<<<<<< HEAD
     def get(self, id):
         query = "SELECT ID_ALARM, date_start, issue FROM Alarm WHERE id_employee = {}".format(id)
         alarms = [] 
@@ -14,6 +18,11 @@ class GetAlarms(Resource):
             alarms.append({'id': alarm[0],'date_start': alarm[1],'issue': alarm[2]})
         
         return jsonify({'alarms': alarms})
+=======
+    def put(self, idUser):
+        query = "SELECT * FROM Alarm WHERE id_employee = {}".format(idUser)
+        return self.connection.read(query)
+>>>>>>> 23320b92dd5462b0fe807ff61d229ab756c0c17a
     
 class SearchAlarms(Resource):
     def get(self, id):
