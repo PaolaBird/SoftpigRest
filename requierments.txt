@@ -1,11 +1,6 @@
-Flask==1.0.2
-<<<<<<< HEAD
-Flask-RESTful==0.3.4
+Flask
+Flask-RESTful
 PyMySQL
 flask-mysqldb
 
 
-=======
-PyMySQL
-flask-mysqldb
->>>>>>> 23320b92dd5462b0fe807ff61d229ab756c0c17a
