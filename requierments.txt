@@ -1,7 +1,0 @@
-Python
-Flask
-Flask-RESTful
-PyMySQL
-flask-mysqldb
-
-
