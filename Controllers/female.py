@@ -8,12 +8,12 @@ class GetFemale(Resource):
     
     def get(self):
         update = "UPDATE Female SET state='Asignada' WHERE state IS NULL"
-        #self.connection.update(update)
-        query = "SELECT ID_FEMALE, virgin, gestation FROM Female WHERE state = 'Asignada' OR state is NULL"
+        self.connection.update(update)
+        query = "SELECT ID_FEMALE, virgin, gestation, state FROM Female WHERE state = 'Asignada' OR state is NULL"
         females = [] 
         result = self.connection.read(query)
         for female in result:
-            females.append({'id': female[0],'virgin': female[1],'gestation': female[2]})
+            females.append({'id': female[0],'virgin': female[1],'gestation': female[2], 'state': female[3]})
         
         return jsonify({'females': females})
         #return result

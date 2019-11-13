@@ -8,14 +8,14 @@ class GetMale(Resource):
     
     def get(self):
         update = "UPDATE Male SET state='Asignado' WHERE state IS NULL"
-        print(self.connection.update(update))
-        query = """SELECT ID_MALE, physicalConformation 
+        self.connection.update(update)
+        query = """SELECT ID_MALE, physicalConformation, state
                         FROM Male WHERE state = 'Asignado' OR state is NULL 
                         """
         males = [] 
         result = self.connection.read(query)
         for male in result:
-            males.append({'id': male[0],'conformation': male[1]})
+            males.append({'id': male[0],'conformation': male[1], 'state': male[2]})
         
         return jsonify({'males': males})
         

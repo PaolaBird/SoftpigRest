@@ -7,11 +7,11 @@ class GetArticle(Resource):
     connection = DbConfig()
     
     def get(self):
-        query = "SELECT ID_ARTICLE, TypeArticleCat.typeArticle AS typeArticle, quantity, available, loan FROM Article INNER JOIN TypeArticleCat ON ID_TYPE_ARTICLE = Article.idType"
+        query = "SELECT ID_ARTICLE, name, TypeArticleCat.typeArticle AS typeArticle, quantity FROM Article INNER JOIN TypeArticleCat ON ID_TYPE_ARTICLE = Article.idType"
         articles = [] 
         result = self.connection.read(query)
         for article in result:
-            articles.append({'id': article[0],'name': article[1],'type': article[2],'quantity': article[3],'available': article[4],'loan': article[5]})
+            articles.append({'id': article[0],'name': article[1],'type': article[2],'quantity': article[3]})
         
         return jsonify({'articles': articles})
         
@@ -19,18 +19,35 @@ class GetArticlesPerson(Resource):
     connection = DbConfig()
     
     def get(self, id):
-        query = "SELECT ID_ARTICLE_PERSON, borrowedCopies, Article.name AS name FROM ArticlePerson INNER JOIN Article ON ID_ARTICLE = ArticlePerson.idArticle WHERE idPerson = {}".format(id)
+        query = """SELECT idArticle, Article.name AS name, TypeArticleCat.typeArticle AS type FROM ArticlePerson 
+                    INNER JOIN Article ON ID_ARTICLE = ArticlePerson.idArticle 
+                    INNER JOIN TypeArticleCat ON ID_TYPE_ARTICLE = Article.idType
+                    WHERE idPerson = {}""".format(id)
+
         articles = [] 
         result = self.connection.read(query)
         for article in result:
-            articles.append({'id': article[0],'borrowedCopies': article[1],'name': article[2]})
+            articles.append({'id': article[0], 'name': article[1], 'type': article[2]})
         
         return jsonify({'articles': articles})
 
 class AddArticle(Resource):
     connection = DbConfig()
     
-    def post(self, id, person, copies):
-        query = "INSERT INTO  ArticlePerson (idArticle, idPerson, borrowedCopies) VALUES ({},{},{})". format(id,person,copies)
+    def post(self):
+        person = request.get_json('person') 
+        article = request.get_json('article')
+        query = "INSERT INTO  ArticlePerson (idArticle, idPerson) VALUES ({},{})". format(article['article'],person['person'])
         return self.connection.insert(query)
-        
+    
+class RemoveArticle(Resource):
+    connection = DbConfig()
+    
+    def post(self):
+        article = request.get_json('article')
+        table = request.get_json('table')
+        if(table['table'] == "Article"):
+            query = "UPDATE Article SET quantity=0 WHERE ID_ARTICLE = {}".format(article['article'])
+        else:
+            query = "DELETE FROM ArticlePerson WHERE idArticle = {}".format(article['article'])
+        return self.connection.delete(query)
