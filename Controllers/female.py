@@ -16,11 +16,10 @@ class GetFemale(Resource):
             females.append({'id': female[0],'virgin': female[1],'gestation': female[2], 'state': female[3]})
         
         return jsonify({'females': females})
-        #return result
     
 class RemoveFemale(Resource):
     connection = DbConfig()
     
     def put (self, id):
         query = """UPDATE Female SET state='{}' WHERE ID_FEMALE = {}""".format('Baja',id)
-        #return self.connection.update(query)
+        return self.connection.update(query)

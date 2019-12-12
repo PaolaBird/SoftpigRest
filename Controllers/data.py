@@ -1,43 +1,102 @@
 from flask_restful import Resource
 from Config.DbConfig import DbConfig
 from flask import jsonify
+from datetime import datetime
 
 class Dasboard(Resource):
     connection = DbConfig()
     def get (self):
-        administrativos = "SELECT COUNT(*) FROM Person WHERE idRole = 10"
-        numAdministrativos = self.connection.count(administrativos)
-        dashboardData = [] 
-        for admin in numAdministrativos:
-            dashboardData.append({'administrativos': admin})
+        try:
+            dashboardData = [] 
+            null_result = 0
             
-        operativos = "SELECT COUNT(*) FROM Person WHERE idRole = 11"
-        numOperativos = self.connection.count(operativos)
-        
-        for opera in numOperativos:
-            dashboardData.append({'operativos': opera})
-        
-        articles = "SELECT COUNT(*) FROM Article"
-        numArticles = self.connection.count(articles)
-        article_person = "SELECT COUNT(*) FROM ArticlePerson"
-        num_article_person = self.connection.count(article_person)
-        
-        for person in num_article_person:
-            dashboardData.append({'article_person': person})
-            for article in numArticles:
-                article =article-person
-                dashboardData.append({'items_inventory':article})
-        
-        installation = "SELECT COUNT(*) FROM InstalationCat"
-        numInstallations = self.connection.count(installation)
-    
-        for installa in numInstallations:
-            dashboardData.append({'number_installations': installa})
+            administrativos = self.connection.count("SELECT COUNT(*) FROM Person WHERE idRole = 10")
             
-        typeInstallation = "SELECT COUNT(*) FROM TypeInstalationCat"
-        numTypeInstallations = self.connection.count(typeInstallation)
-        for typeInstalla in numTypeInstallations:
-            dashboardData.append({'installations_type': typeInstalla})
-        
-        return jsonify ({'dashboard': dashboardData})
+            if(administrativos):
+                dashboardData.append({'administrativos': administrativos[0]})
+            else:
+                dashboardData.append({'administrativos': null_result})
     
+            operativos = self.connection.count("SELECT COUNT(*) FROM Person WHERE idRole = 11")
+            
+            if(operativos):
+                dashboardData.append({'operativos': operativos[0]})
+            else:
+                dashboardData.append({'operativos': null_result})
+                
+            articles = self.connection.count("SELECT COUNT(*) FROM Article WHERE quantity > 0")
+            if articles:
+                dashboardData.append({'items_inventory':articles[0]})
+            else:
+                dashboardData.append({'items_inventory':null_result})
+                
+            article_person = self.connection.count("SELECT COUNT(*) FROM ArticlePerson group by idPerson")
+            
+            if article_person:
+                dashboardData.append({'article_person': article_person[0]})
+            else:
+                dashboardData.append({'article_person': null_result})
+            
+            installations = self.connection.count("SELECT COUNT(*) FROM InstalationCat")
+            
+            if (installations):
+                dashboardData.append({'number_installations': installations[0]})
+            else:
+                dashboardData.append({'number_installations': null_result})
+                
+            typeInstallation = self.connection.count("SELECT COUNT(*) FROM TypeInstalationCat")
+            
+            if typeInstallation:
+                dashboardData.append({'installations_type': typeInstallation[0]})
+            else:
+                dashboardData.append({'installations_type': null_result})
+           
+            return jsonify({'dashboard': dashboardData})
+        except:
+            return jsonify ({'status': 400})
+               
+class FemaleData(Resource):
+    connection = DbConfig()
+    
+    def get(self, id):
+        data_female = []
+        now = datetime.now()
+        heat = self.connection.count("SELECT COUNT(*) FROM PeriodHeat WHERE ID_FEMALE = {} AND year(DATE_START)={}".format(id,now.year))
+        data_female.append({'heats_year': heat[0]})
+        gestation = self.connection.count("SELECT COUNT(*) FROM PeriodGestation WHERE ID_FEMALE = {} AND year(DATE_START)={}".format(id,now.year))
+        data_female.append({'gestation_year': gestation[0]})
+        birth = self.connection.count("SELECT COUNT(*) FROM Birth WHERE ID_FEMALE = {} AND year(DATE_BIRTH)={}".format(id,now.year))
+        data_female.append({'birth_year': birth[0]})
+        return jsonify ({'data_female': data_female})
+    
+class ReportData(Resource):
+    
+    connection = DbConfig()
+    
+    def get(self):
+        
+        now = datetime.now()
+        
+        #Data reporductora
+        result_noBabies  =self.connection.count("SELECT SUM(noBabies) FROM Birth WHERE YEAR(DATE_BIRTH)= {}".format(now.year))
+        result_noDead = self.connection.count("SELECT SUM(noDead) FROM Birth WHERE YEAR(DATE_BIRTH)= {}".format(now.year))
+        
+        data= []
+        data.append({'noBabies': int(result_noBabies[0]), 
+                     'noDead': int(result_noDead[0])})
+        
+        result_gestations = self.connection.count("SELECT COUNT(*) FROM PeriodGestation WHERE YEAR(DATE_START)= {}".format(now.year))
+        result_birth = self.connection.count("SELECT COUNT(*) FROM Birth WHERE YEAR(DATE_BIRTH)= {}".format(now.year))
+        
+        data.append({'gestations': result_gestations[0],
+                     'births': result_birth[0]})
+        
+        result_month = self.connection.count("SELECT COUNT(*) FROM Birth WHERE MONTH(DATE_BIRTH)= {}".format(now.month))
+        result_females = self.connection.count("SELECT COUNT(*) FROM Female WHERE state='Asignada'")
+        
+        data.append({'month-births': result_month[0],
+                     'females': result_females[0]})
+        
+        return jsonify({'report-data': data})
+    
+        

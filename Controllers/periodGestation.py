@@ -1,26 +1,45 @@
 from flask_restful import Resource, request
 from Config.DbConfig import DbConfig
 from flask import jsonify
-import datetime
+from datetime import datetime, timedelta
 
-class GetPeriodGestation(Resource):
+class Gestation(Resource):
     
     connection = DbConfig()
     
-    def get(self, id, person):
-        hoy = datetime.datetime.utcnow()
-        fecha = hoy + datetime.timedelta(days=112)
-        #fecha = alarm.strftime("%x")
-        #hora = alarm.strftime("%X")
+    def get(self, id):
         query = "SELECT ID_PERIOD_GESTATION, idMale, DATE_START FROM PeriodGestation WHERE ID_FEMALE = {}".format(id)
-        issue = "En aproximadamente 2 dias la reproductora {} estará en parto, revisa su estado".format(id)
-        alarm= "INSERT INTO  Alarm (date_start, issue, id_employee) VALUES ({},{},{})".format(fecha,issue, person)
-        # heats = [] 
-        # result = self.connection.read(query)
-        # for heat in result:
-        #     heats.append({'id': heat[0],'type': heat[1],'sincrony': heat[2],'dateStart': heat[3],'dateEnd': heat[4]})
+        gestations = [] 
+        result = self.connection.read(query)
+        for gestation in result:
+            gestations.append({'id': gestation[0],'male': gestation[1],'date_start': datetime.strftime(gestation[2], '%d/%m/%Y')})
         
-        #return jsonify({'heats': heats})
-        #print (alarm)
-        return query
+        return jsonify({'gestations': gestations})
+    
+    def post(self):
+        ID_FEMALE = request.get_json('ID_FEMALE')
+        idMale = request.get_json('idMale')
+        DATE_START = request.get_json('DATE_START')
+        
+        id_Employee = self.connection.employee("SELECT NO_EMPLOYEE FROM Person WHERE idInstalation = 03")
+        
+        date = datetime.strptime(DATE_START['DATE_START'], "%Y-%m-%d")
+        alarm = date + timedelta(days=113)
+        hour = datetime.now()
+        hour = datetime.strftime(hour,"%X")
+        
+        issue = "En aproximadamente 1 dia la reproductora {} tendrá sus bebes, revisala".format(ID_FEMALE['ID_FEMALE'])
+        
+        alarm = "INSERT INTO  Alarm(employee, DATE, hour, issue) VALUES ({}, '{}', '{}', '{}')".format(id_Employee[0], alarm, hour, issue)
+        result_alarm = self.connection.insert(alarm)
+        if(result_alarm):
+            
+            idAlarm = "SELECT MAX(ID_ALARM) FROM Alarm"
+            result_idAlarm = self.connection.count(idAlarm)
+            query = """INSERT INTO PeriodGestation (ID_FEMALE, idMale, DATE_START, idAlarm) 
+                VALUES ({},{},'{}',{})""".format(ID_FEMALE['ID_FEMALE'], idMale['idMale'], DATE_START['DATE_START'], result_idAlarm[0])
+            return self.connection.insert(query)
+        
+        else:
+            return jsonify({'status': 400})
 

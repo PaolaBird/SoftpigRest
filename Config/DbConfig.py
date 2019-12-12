@@ -34,7 +34,6 @@ class DbConfig():
     def insert(self, query):
         
         conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
-        #conn = pymysql.connect("localhost","root","root", "softporc")
         
         try: 
             with conn.cursor() as cursor:
@@ -44,7 +43,8 @@ class DbConfig():
             return jsonify({'status': 200})
         
         except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
-            return jsonify({'status': 400, 'Error': e}) 
+            #return jsonify({'status': 400, 'Error': e}) 
+            return e
         
         finally:
             conn.close()
@@ -74,6 +74,20 @@ class DbConfig():
             return c.fetchone()
         
         except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
+            #return jsonify({'status': 400, 'Error': e}) 
+            return e
+        
+        finally:
+            conn.close()
+    
+    def Alarm(self, query):
+        conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        try:
+            c = conn.cursor()
+            c.execute(query)
+            return c.fetchone()
+        
+        except (pymysql.err.OperationalError, pymysql.err.InternalError) as e:
             return jsonify({'status': 400, 'Error': e}) 
         
         finally:
@@ -81,6 +95,7 @@ class DbConfig():
 
     def employee(self, query):
         conn = pymysql.connect("200.93.148.19",  "softporc","4052018", "softporc")
+        #conn = pymysql.connect("localhost","root","root", "softporc")
         try:
             c = conn.cursor()
             c.execute(query)

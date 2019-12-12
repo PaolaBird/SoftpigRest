@@ -68,7 +68,7 @@ class AddHoursWorked(Resource):
     def put (self):
         person = request.get_json('person') 
         hours = request.get_json('hours')
-        salary = hours['hours'] * 3450
+        salary = int (hours['hours']) * 3450
         query = """UPDATE Person SET hoursWorked={}, salary={} WHERE NO_EMPLOYEE = {}""".format(hours['hours'],salary, person['person'])
         return self.connection.update(query)
     
